@@ -16,6 +16,10 @@ allprojects {
 	group "org.springframework.boot"
 
 	repositories {
+		maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+		maven { url "http://maven.aliyun.com/nexus/content/repositpries/jcenter" }
+		maven { url "https://repo.spring.io/plugins-release" }
+		maven { url "D:\\MavenLibrary\\.m2\\repository" }
 		mavenCentral()
 		if (version.contains('-')) {
 			maven { url "https://repo.spring.io/milestone" }
