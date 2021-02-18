@@ -279,10 +279,15 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// 设定webApplicationType，根据classpath下存在的类分为REACTIVE、SERVLET、NONE三种
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		// 在spring.factories文件中加载Bootstrapper对应的类并实例化，设置到bootstrappers属性中
 		this.bootstrappers = new ArrayList<>(getSpringFactoriesInstances(Bootstrapper.class));
+		// 在spring.factories文件中加载ApplicationContextInitializer对应的类并实例化，设置到initializers属性中
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+		// 在spring.factories文件中加载ApplicationListener对应的类并实例化，设置到listeners属性中
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+		// 根据堆栈信息找到执行main方法的类，设置到mainApplicationClass属性中
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
@@ -310,10 +315,13 @@ public class SpringApplication {
 	public ConfigurableApplicationContext run(String... args) {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
+		// 创建DefaultBootstrapContext，并调用所有Bootstrapper的intitialize方法
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
 		ConfigurableApplicationContext context = null;
 		configureHeadlessProperty();
+		// run方法内所有事件发布的监听器，主要是EventPublishingRunListener，来广播事件
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 发布ApplicationStartingEvent事件
 		listeners.starting(bootstrapContext, this.mainApplicationClass);
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
@@ -433,6 +441,8 @@ public class SpringApplication {
 
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
 		Class<?>[] types = new Class<?>[] { SpringApplication.class, String[].class };
+		// 在spring.factories文件中加载SpringApplicationRunListener对应的类并实例化，包装到SpringApplicationRunListeners对象中
+		// 主要是EventPublishingRunListener类，其本身持有所有listenter的引用，持有多播器，可以直接进行时间发布
 		return new SpringApplicationRunListeners(logger,
 				getSpringFactoriesInstances(SpringApplicationRunListener.class, types, this, args),
 				this.applicationStartup);
