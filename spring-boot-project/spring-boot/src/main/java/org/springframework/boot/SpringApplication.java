@@ -325,11 +325,15 @@ public class SpringApplication {
 		listeners.starting(bootstrapContext, this.mainApplicationClass);
 		try {
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			// 实例化并设置environment对象，设置ConversionService、Properties、Profile等，发布ApplicationEnvironmentPreparedEvent事件
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
 			configureIgnoreBeanInfo(environment);
+			// 输出Banner，可以选择不输出、输出到控制台、输出到文件
 			Banner printedBanner = printBanner(environment);
+			// 创建ApplicationContext，AnnotationConfigServletWebServerApplicationContext
 			context = createApplicationContext();
 			context.setApplicationStartup(this.applicationStartup);
+			// 注册sources和primarySources类，发布ApplicationContextInitializedEvent、ApplicationPreparedEvent事件
 			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
 			refreshContext(context);
 			afterRefresh(context, applicationArguments);
@@ -365,8 +369,11 @@ public class SpringApplication {
 			DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
 		// Create and configure the environment
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		// 往environment中设置ConversionService，并配置PropertiesSource和Profiles
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		// 将当前environment中的source包装后以configurationProperties为key加入到source的第一个
 		ConfigurationPropertySources.attach(environment);
+		// 发布ApplicationEnvironmentPreparedEvent事件
 		listeners.environmentPrepared(bootstrapContext, environment);
 		DefaultPropertiesPropertySource.moveToEnd(environment);
 		configureAdditionalProfiles(environment);
@@ -375,6 +382,7 @@ public class SpringApplication {
 			environment = new EnvironmentConverter(getClassLoader()).convertEnvironmentIfNecessary(environment,
 					deduceEnvironmentClass());
 		}
+		// 保证configurationProperties为environment中propertiesSource属性的第一位
 		ConfigurationPropertySources.attach(environment);
 		return environment;
 	}
@@ -395,7 +403,9 @@ public class SpringApplication {
 			ApplicationArguments applicationArguments, Banner printedBanner) {
 		context.setEnvironment(environment);
 		postProcessApplicationContext(context);
+		// 执行所有实例化好的ApplicationContextInitializer#initialize方法，通常是添加BFPP或者注册Bean之类的操作
 		applyInitializers(context);
+		// 发布ApplicationContextInitializedEvent事件
 		listeners.contextPrepared(context);
 		bootstrapContext.close(context);
 		if (this.logStartupInfo) {
@@ -418,7 +428,9 @@ public class SpringApplication {
 		// Load the sources
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		// 实例化BeanDefinitionLoader，用来load所有的primarySources和sources类，将生成的BeanDefinitionHolder注册到BeanFactory
 		load(context, sources.toArray(new Object[0]));
+		// 发布ApplicationPreparedEvent事件
 		listeners.contextLoaded(context);
 	}
 

@@ -50,6 +50,7 @@ public class SystemEnvironmentPropertySourceEnvironmentPostProcessor implements 
 	public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
 		String sourceName = StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME;
 		PropertySource<?> propertySource = environment.getPropertySources().get(sourceName);
+		// 将SystemEnvironmentPropertySource重新包装成OriginAwareSystemEnvironmentPropertySource
 		if (propertySource != null) {
 			replacePropertySource(environment, sourceName, propertySource);
 		}
