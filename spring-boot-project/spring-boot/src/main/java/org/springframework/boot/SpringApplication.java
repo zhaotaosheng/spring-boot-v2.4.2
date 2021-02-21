@@ -373,7 +373,7 @@ public class SpringApplication {
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		// 将当前environment中的source包装后以configurationProperties为key加入到source的第一个
 		ConfigurationPropertySources.attach(environment);
-		// 发布ApplicationEnvironmentPreparedEvent事件
+		// 发布ApplicationEnvironmentPreparedEvent事件，会触发所有EnvironmentPostProcessor#postProcessEnvironment方法
 		listeners.environmentPrepared(bootstrapContext, environment);
 		DefaultPropertiesPropertySource.moveToEnd(environment);
 		configureAdditionalProfiles(environment);
